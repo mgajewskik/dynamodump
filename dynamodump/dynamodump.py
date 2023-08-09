@@ -10,7 +10,6 @@
 
 import argparse
 import base64
-import boto3
 import datetime
 import errno
 import fnmatch
@@ -25,10 +24,11 @@ import threading
 import time
 import zipfile
 from queue import Queue
-from six.moves import input
-from urllib.error import URLError, HTTPError
+from urllib.error import HTTPError, URLError
 from urllib.request import urlopen
 
+import boto3
+from six.moves import input
 
 AWS_SLEEP_INTERVAL = 10  # seconds
 BATCH_WRITE_SLEEP_INTERVAL = 0.15  # seconds
@@ -226,7 +226,9 @@ def do_get_s3_archive(profile, region, bucket, table, archive):
     # Therefore, just get item from bucket based on table name since that's what we name the files.
     filename = None
     for d in contents["Contents"]:
-        if d["Key"] == "{}/{}.{}".format(args.dumpPath, table, archive_type):
+        # NOTE: path on S3 is not saved with args.dumpPath attached
+        # if d["Key"] == "{}/{}.{}".format(args.dumpPath, table, archive_type):
+        if d["Key"] == "{}.{}".format(table, archive_type):
             filename = d["Key"]
 
     if not filename:
